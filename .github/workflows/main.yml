@@ -45,6 +45,7 @@ jobs:
       - name: Compile mqoi
         run: |
           mkoctfile -mex qoiread.c -Iqoi
+          mkoctfile -mex qoidecode.c -Iqoi
 
       - name: Run tests (MEX)
         run: |

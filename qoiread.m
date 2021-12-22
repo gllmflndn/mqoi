@@ -6,6 +6,13 @@ if fid == -1
 end
 closeFile = onCleanup(@()fclose(fid));
 
+if false
+    data = fread (fid, '*uint8');
+    IMG  = qoidecode (data);
+    IMG  = permute (IMG, [3 2 1]);
+    return;
+end
+
 magic      = fread (fid, 4, '*char')';
 if ~strcmp (magic,'qoif'), error ('Invalid QOI file.'); end
 sz         = swapbytes (fread (fid, 2, '*uint32'))'; % LE platform

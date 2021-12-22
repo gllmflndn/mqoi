@@ -14,9 +14,17 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mxArray *mx[2];
     mwSize dims[3] = {0,0,0};
     
+    if (nrhs != 1)
+        mexErrMsgIdAndTxt ("qoiread:input", "qoiread requires one input parameter.");
+    if (!mxIsChar (prhs[0]))
+        mexErrMsgIdAndTxt ("qoiread:filename", "Filename must be a string.");
+    
     filename = mxArrayToString (prhs[0]);
     data = qoi_read (filename, &params, 0);
     mxFree (filename);
+    
+    if (data == NULL)
+        mexErrMsgIdAndTxt ("qoiread:read", "Error when reading and decoding file.");
     
     plhs[0] = mxCreateNumericArray (3, dims, mxUINT8_CLASS, mxREAL);
     mxSetPr (plhs[0], data);
