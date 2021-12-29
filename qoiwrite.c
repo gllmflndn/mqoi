@@ -27,34 +27,38 @@
 void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     qoi_desc params;
     char *filename;
-    void *data;
+    mwSize ndims;
+    const mwSize *dims;
     mxArray *mx[2];
-    mwSize dims[3] = {0,0,0};
+    mxArray *data;
     
-    if (nrhs != 1)
-        mexErrMsgIdAndTxt ("qoiread:input", "qoiread requires one input parameter.");
-    if (!mxIsChar (prhs[0]))
-        mexErrMsgIdAndTxt ("qoiread:filename", "Filename must be a string.");
+    if (nrhs != 2)
+        mexErrMsgIdAndTxt ("qoiwrite:inputs", "qoiwrite requires two input parameters.");
+    if (!mxIsClass (prhs[0], "uint8"))
+        mexErrMsgIdAndTxt ("qoiwrite:image", "Image must be a uint8 array.");
+    if (!mxIsChar (prhs[1]))
+        mexErrMsgIdAndTxt ("qoiwrite:filename", "Filename must be a string.");
     
-    filename = mxArrayToString (prhs[0]);
-    data = qoi_read (filename, &params, 0);
-    mxFree (filename);
+    ndims = mxGetNumberOfDimensions (prhs[0]);
+    dims = mxGetDimensions (prhs[0]);
+    if (ndims != 3 || (dims[2] != 3 && dims[2] != 4))
+        mexErrMsgIdAndTxt ("qoiwrite:dimensions", "Input image must be mxnx3 or mxnx4.");
     
-    if (data == NULL)
-        mexErrMsgIdAndTxt ("qoiread:read", "Error when reading and decoding file.");
+    params.width = dims[1];
+	params.height = dims[0];
+	params.channels = dims[2];
+	params.colorspace = QOI_SRGB;
     
-    plhs[0] = mxCreateNumericArray (3, dims, mxUINT8_CLASS, mxREAL);
-    mxSetPr (plhs[0], data);
-    dims[0] = params.channels;
-    dims[1] = params.width;
-    dims[2] = params.height;
-    mxSetDimensions (plhs[0], dims, 3);
-
-    mx[0] = plhs[0];
+    mx[0] = (mxArray *)prhs[0];
     mx[1] = mxCreateNumericMatrix (1, 3, mxDOUBLE_CLASS, mxREAL);
     mxGetPr (mx[1])[0] = 3;
     mxGetPr (mx[1])[1] = 2;
     mxGetPr (mx[1])[2] = 1;
-    mexCallMATLAB (1, plhs, 2, mx, "permute");
+    mexCallMATLAB (1, &data, 2, mx, "permute");
     mxDestroyArray (mx[1]);
+    
+    filename = mxArrayToString (prhs[1]);
+    qoi_write (filename, mxGetPr (data), &params);
+    mxDestroyArray (data);
+    mxFree (filename);
 }
