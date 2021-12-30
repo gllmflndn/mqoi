@@ -1,4 +1,7 @@
 function test_qoiwrite (data_dir)
+% Test Quite OK Image (QOI) encoder
+
+% mqoi  Copyright (C) 2021  Guillaume Flandin
 
 if ~nargin
     data_dir = pwd;

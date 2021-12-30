@@ -1,8 +1,8 @@
-function img = qoiread (filename)
-% Quite OK Image (QOI) reader
-% FORMAT img = qoiread (filename)
-% filename   - character vector specifying the file to read
+function data = qoiencode (img)
+% Quite OK Image (QOI) encoder
+% FORMAT data = qoiencode (img)
 % img        - M-by-N-by-3 or M-by-N-by-4 uint8 array of RGB or RGBA data
+% data       - encoded uint8 vector
 
 % mqoi  Copyright (C) 2021  Guillaume Flandin
 
@@ -20,13 +20,4 @@ function img = qoiread (filename)
 % along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-fid = fopen (filename, 'rb');
-if fid == -1
-    error ('Cannot open file "%s".', filename);
-end
-data = fread (fid, '*uint8');
-fclose (fid);
-
-img = qoidecode (data);
-
-img = permute (img, [3 2 1]);
+error ('qoiencode:encode', 'MEX file qoiencode not compiled.');
