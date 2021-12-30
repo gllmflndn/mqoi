@@ -1,4 +1,4 @@
-function IMG = qoiread (filename)
+function img = qoiread (filename)
 % Quite OK Image (QOI) reader
 % FORMAT IMG = qoiread (filename)
 % filename   - character vector specifying the file to read
@@ -24,22 +24,27 @@ fid = fopen (filename, 'rb');
 if fid == -1
     error ('Cannot open file "%s".', filename);
 end
-closeFile = onCleanup(@()fclose(fid));
+data = fread (fid, '*uint8');
+fclose (fid);
 
-if false
-    data = fread (fid, '*uint8');
-    IMG  = qoidecode (data);
-    IMG  = permute (IMG, [3 2 1]);
-    return;
+if true
+    img  = mqoidecode (data);
+else
+    img  = qoidecode (data);
 end
+img  = permute (img, [3 2 1]);
 
-magic      = fread (fid, 4, '*char')';
-if ~strcmp (magic,'qoif'), error ('Invalid QOI file.'); end
-sz         = swapbytes (fread (fid, 2, '*uint32'))'; % LE platform
-channels   = fread (fid, 1, 'uint8');
-colorspace = fread (fid, 1, 'uint8');
 
-IMG         = zeros ([prod(sz) channels], 'uint8');
+function img = mqoidecode (data)
+
+rx          = 1;
+magic       = char (data(rx:rx+3)'); rx = rx + 4;
+if ~strcmp (magic,'qoif'), error ('Invalid QOI file.'); end  % LE platform
+sz          = swapbytes (typecast (data(rx:rx+7), 'uint32'))'; rx = rx + 8;
+channels    = double (data(rx)); rx = rx + 1;
+colorspace  = data(rx); rx = rx + 1;
+
+img         = zeros ([channels prod(sz)], 'uint8');
 rgba        = uint8 ([0 0 0])';
 rgb2idx     = [3 5 7]';
 if channels == 4
@@ -47,20 +52,20 @@ if channels == 4
     rgb2idx = [rgb2idx; 11];
 end
 array       = zeros (64, channels, 'uint8');
-i           = 1;
+tx          = 1;
 run         = 0;
 
-while i <= prod (sz)
+while tx <= prod (sz)
     if run
         run = run - 1;
     else
-        tag8 = fread (fid, 1,'uint8');
+        tag8 = data(rx); rx = rx + 1;
         if tag8 == 254
             % QOI_OP_RGB
-            rgba(1:3) = fread (fid, 3, 'uint8');
+            rgba(1:3) = data(rx:rx+2); rx = rx + 3;
         elseif tag8 == 255
             % QOI_OP_RGBA
-            rgba = fread (fid, 4, 'uint8');
+            rgba = data(rx:rx+3); rx = rx + 4;
         else
             tag2 = bitand (tag8, uint8 (192));
             if tag2 == 0
@@ -76,7 +81,7 @@ while i <= prod (sz)
             elseif tag2 == 128
                 % QOI_OP_LUMA
                 dg = int16 (bitand (tag8, uint8 (63))) - 32;
-                b  = fread (fid, 1, 'uint8');
+                b  = data(rx); rx = rx + 1;
                 db = int16 (bitand (b, uint8 (15))) - 8;
                 dr = int16 (bitshift (bitand (b, uint8 (240)), -4)) - 8;
                 rgba(2) = mod (int16 (rgba(2)) + dg, 256);
@@ -90,11 +95,11 @@ while i <= prod (sz)
             end
         end
     end
-    IMG(i,:) = rgba;
+    img(:,tx) = rgba;
     idx = mod (sum (double (rgba) .* rgb2idx), 64);
     if channels == 3, idx = mod (idx + 255*11, 64); end
     array(idx+1,:) = rgba;
-    i = i + 1;
+    tx = tx + 1;
 end
 
-IMG = fliplr (rot90 (reshape (IMG, [sz channels]), -1));
+img = reshape (img, [channels sz]);
