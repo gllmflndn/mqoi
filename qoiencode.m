@@ -1,8 +1,8 @@
 function data = qoiencode (img)
 % Quite OK Image (QOI) encoder
 % FORMAT data = qoiencode (img)
-% img        - M-by-N-by-3 or M-by-N-by-4 uint8 array of RGB or RGBA data
-% data       - encoded uint8 vector
+% img         - M-by-N-by-3 or M-by-N-by-4 uint8 array of RGB or RGBA data
+% data        - encoded uint8 vector
 
 % mqoi  Copyright (C) 2021  Guillaume Flandin
 
@@ -20,4 +20,7 @@ function data = qoiencode (img)
 % along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-error ('qoiencode:encode', 'MEX file qoiencode not compiled.');
+%-Placeholder (no compression)
+data = [uint8('qoif'), typecast(swapbytes(uint32([size(img,2),size(img,3)])),'uint8'), size(img,1), 0, ...
+    reshape([repmat(uint8(251+size(img,1)),1,size(img,2)*size(img,3));reshape(img,size(img,1),[])],1,[]), ...
+    0, 0, 0, 0, 0, 0, 0, 1];

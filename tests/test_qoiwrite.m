@@ -19,7 +19,7 @@ for i=1:numel (files)
         qoiwrite (IMG1, qoifile);
         qoistat = dir (qoifile);
         imgstat = whos ('IMG1');
-        fprintf ('(raw:%d, png: %d, qoi:%d) ', imgstat.bytes, qoistat.bytes, files(i).bytes);
+        fprintf ('(raw:%d, qoi: %d, png:%d) ', imgstat.bytes, qoistat.bytes, files(i).bytes);
         IMG2 = qoiread (qoifile);
         if isequal(IMG1,IMG2)
             fprintf ('pass\n');

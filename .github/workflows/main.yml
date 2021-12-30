@@ -41,6 +41,7 @@ jobs:
       - name: Run tests (M)
         run: |
           octave --no-gui --no-window-system --silent --eval "cd tests; test_qoiread qoi_test_images"
+          octave --no-gui --no-window-system --silent --eval "cd tests; test_qoiwrite qoi_test_images"
 
       - name: Compile mqoi
         run: |

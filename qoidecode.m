@@ -67,9 +67,7 @@ while tx <= prod (sz)
                 b  = data(rx); rx = rx + 1;
                 db = int16 (bitand (b, uint8 (15))) - 8;
                 dr = int16 (bitshift (bitand (b, uint8 (240)), -4)) - 8;
-                rgba(2) = mod (int16 (rgba(2)) + dg, 256);
-                rgba(1) = mod (int16 (rgba(1)) + dg + dr, 256);
-                rgba(3) = mod (int16 (rgba(3)) + dg + db, 256);
+                rgba(1:3) = mod (int16 (rgba(1:3)) + [dg + dr; dg; dg + db], 256);
             elseif tag2 == 192
                 % QOI_OP_RUN
                 run = bitand (tag8, uint8 (63));
