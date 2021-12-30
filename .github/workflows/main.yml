@@ -46,7 +46,10 @@ jobs:
         run: |
           mkoctfile -mex qoiread.c -Iqoi
           mkoctfile -mex qoidecode.c -Iqoi
+          mkoctfile -mex qoiwrite.c -Iqoi
+          mkoctfile -mex qoiencode.c -Iqoi
 
       - name: Run tests (MEX)
         run: |
           octave --no-gui --no-window-system --silent --eval "test_qoiread qoi_test_images"
+          octave --no-gui --no-window-system --silent --eval "test_qoiwrite qoi_test_images"

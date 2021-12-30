@@ -20,45 +20,40 @@
 #include "mex.h"
 
 #define QOI_IMPLEMENTATION
+#define QOI_NO_STDIO
 #define QOI_MALLOC mxMalloc
 #define QOI_FREE mxFree
 #include "qoi.h"
 
 void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     qoi_desc params;
-    char *filename;
+    int out_len;
+    void *data;
     mwSize ndims;
     const mwSize *dims;
-    mxArray *mx[2];
-    mxArray *data;
     
-    if (nrhs != 2)
-        mexErrMsgIdAndTxt ("qoiwrite:inputs", "qoiwrite requires two input parameters.");
+    if (nrhs != 1)
+        mexErrMsgIdAndTxt ("qoiencode:inputs", "qoiencode requires one input parameter.");
     if (!mxIsClass (prhs[0], "uint8"))
-        mexErrMsgIdAndTxt ("qoiwrite:image", "Image must be a uint8 array.");
-    if (!mxIsChar (prhs[1]))
-        mexErrMsgIdAndTxt ("qoiwrite:filename", "Filename must be a string.");
-    
+        mexErrMsgIdAndTxt ("qoiencode:image", "Image must be a uint8 array.");
     ndims = mxGetNumberOfDimensions (prhs[0]);
     dims = mxGetDimensions (prhs[0]);
-    if (ndims != 3 || (dims[2] != 3 && dims[2] != 4))
-        mexErrMsgIdAndTxt ("qoiwrite:dimensions", "Input image must be MxNx3 or MxNx4.");
+    if (ndims != 3 || (dims[0] != 3 && dims[0] != 4))
+        mexErrMsgIdAndTxt ("qoiencode:dimensions", "Input image must be MxNx3 or MxNx4.");
     
+    dims = mxGetDimensions (prhs[0]);
     params.width = dims[1];
-	params.height = dims[0];
-	params.channels = dims[2];
+	params.height = dims[2];
+	params.channels = dims[0];
 	params.colorspace = QOI_SRGB;
+
+    data = qoi_encode(mxGetPr (prhs[0]), &params, &out_len);
     
-    mx[0] = (mxArray *)prhs[0];
-    mx[1] = mxCreateNumericMatrix (1, 3, mxDOUBLE_CLASS, mxREAL);
-    mxGetPr (mx[1])[0] = 3;
-    mxGetPr (mx[1])[1] = 2;
-    mxGetPr (mx[1])[2] = 1;
-    mexCallMATLAB (1, &data, 2, mx, "permute");
-    mxDestroyArray (mx[1]);
-    
-    filename = mxArrayToString (prhs[1]);
-    qoi_write (filename, mxGetPr (data), &params);
-    mxDestroyArray (data);
-    mxFree (filename);
+    if (data == NULL)
+        mexErrMsgIdAndTxt ("qoiencode:encode", "Error when encoding data.");
+        
+    plhs[0] = mxCreateNumericMatrix (0, 0, mxUINT8_CLASS, mxREAL);
+    mxSetPr (plhs[0], data);
+    mxSetM (plhs[0], 1);
+    mxSetN (plhs[0], out_len);
 }
