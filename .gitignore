@@ -1,0 +1,4 @@
+*.mex*
+*.o
+tests/qoi_test_images/
+qoi/

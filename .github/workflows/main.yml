@@ -31,7 +31,7 @@ jobs:
       - name: Download test images
         run: |
           wget https://qoiformat.org/qoi_test_images.zip
-          unzip qoi_test_images.zip
+          unzip -d tests qoi_test_images.zip
           rm qoi_test_images.zip
 
       - name: Install mqoi
@@ -40,7 +40,7 @@ jobs:
 
       - name: Run tests (M)
         run: |
-          octave --no-gui --no-window-system --silent --eval "test_qoiread qoi_test_images"
+          octave --no-gui --no-window-system --silent --eval "cd tests; test_qoiread qoi_test_images"
 
       - name: Compile mqoi
         run: |
@@ -51,5 +51,5 @@ jobs:
 
       - name: Run tests (MEX)
         run: |
-          octave --no-gui --no-window-system --silent --eval "test_qoiread qoi_test_images"
-          octave --no-gui --no-window-system --silent --eval "test_qoiwrite qoi_test_images"
+          octave --no-gui --no-window-system --silent --eval "cd tests; test_qoiread qoi_test_images"
+          octave --no-gui --no-window-system --silent --eval "cd tests; test_qoiwrite qoi_test_images"
