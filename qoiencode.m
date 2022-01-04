@@ -24,3 +24,29 @@ function data = qoiencode (img)
 data = [uint8('qoif'), typecast(swapbytes(uint32([size(img,2),size(img,3)])),'uint8'), size(img,1), 0, ...
     reshape([repmat(uint8(251+size(img,1)),1,size(img,2)*size(img,3));reshape(img,size(img,1),[])],1,[]), ...
     0, 0, 0, 0, 0, 0, 0, 1];
+
+return;
+
+ch          = size(img,1);
+data        = zeros (1, 4+8+2+size(img,2)*size(img,3)*(ch+1)+8, 'uint8');
+data(1:14)  = [uint8('qoif'), ...
+               typecast(swapbytes(uint32([size(img,2),size(img,3)])),'uint8'), ...
+               ch, 0];
+rx          = 1;
+tx          = 15;
+rgba        = uint8 ([0 0 0])';
+rgb2idx     = [3 5 7]';
+if ch == 4
+    rgba    = [rgba; 255];
+    rgb2idx = [rgb2idx; 11];
+end
+array = zeros (ch, 64, 'uint8');
+while rx <= size(img,2)*size(img,3)
+    rgba(1:ch) = img(:,rx);
+    idx = mod (sum (double (rgba) .* rgb2idx), 64);
+    if ch == 3, idx = mod (idx + 255*11, 64); end
+    array(:, idx+1) = rgba;
+    
+    data(tx:tx+ch) = [251+ch;rgba(1:ch)]; tx = tx + ch + 1;
+    rx = rx + 1;
+end
